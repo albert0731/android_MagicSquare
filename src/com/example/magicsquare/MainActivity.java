@@ -1,75 +1,125 @@
 package com.example.magicsquare;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
-import android.view.Gravity;  
-import android.view.View;  
-import android.view.ViewGroup;  
-import android.view.Window;  
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 public class MainActivity extends Activity {
 	/** CamyLayouted when the activity is first created. */
+	//Creat a N by N array
+	int NByN = 4, StartNumber;
+	//Magic Square Numbers
+	int[][] NumberArray = {{16, 2, 3, 13}, {5, 11, 10, 8}, {9, 7, 6, 12}, {4, 14, 15, 1}};
+	Button[][] ButtonNumberFiled = new Button[NByN][NByN];
+	String[] SetNumberArray = new String [NByN*NByN+5];
+	TextView DebugPrintOut;
+
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		CreateDynamicLayouts();
 	}
 
-	void CreateDynamicLayouts(){
+	private void CreateDynamicLayouts(){
 
-		LinearLayout myLayout = new LinearLayout(this);
-		myLayout.setOrientation(LinearLayout.VERTICAL);
+		LinearLayout MainLayout = new LinearLayout(this);
+		MainLayout.setOrientation(LinearLayout.VERTICAL);
 
-		TextView tv = new TextView(this);
-		tv.setText("Dynamic layouts ftw!");
-		myLayout.addView(tv);
-		
-		//Creat a N by N array
-		int NByN = 4;
-		//Magic Square Numbers
-		int[][] NumberArray = {{16, 2, 3, 13}, {5, 11, 10, 8}, {9, 7, 6, 12}, {4, 14, 15, 1}};
-		
+		DebugPrintOut = new TextView(this);
+		DebugPrintOut.setText("Dynamic layouts ftw!");
+		MainLayout.addView(DebugPrintOut);
+
 		//Get Width Pixels of Cell Phone
 		DisplayMetrics dm = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
-		
-		Button[][] TextFiled = new Button[NByN][NByN];
-		TableRow[] myTableRow = new TableRow[NByN];
+		//Build Table of N by N array
+		LinearLayout[] RowLayout = new LinearLayout[NByN];
+
+		StartNumber = 1;
 
 		for(int i = 0; i < NByN; i++) {
-			myTableRow[i] = new TableRow(this);
-			myTableRow[i].setLayoutParams(new TableRow.LayoutParams(MATCH_PARENT, WRAP_CONTENT)); 
-			
-			for(int j = 0; j < NByN; j++) {
-				TextFiled[i][j] = new Button(this);
-//				TextFiled[i][j].setWidth(50);
-//				TextFiled[i][j].setSingleLine();
-				TextFiled[i][j].setText(String.valueOf(NumberArray[i][j]));
+			//Build N Rows
+			RowLayout[i] = new LinearLayout(this);
+			RowLayout[i].setOrientation(LinearLayout.HORIZONTAL);	
 
-				myTableRow[i].addView(TextFiled[i][j]);
-				//myLayout.addView(TextFiled[i][j]);
-				//myTableRow[i].addView(TextFiled[i][j], new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-				//myLayout.addView(TextFiled[i][j], new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+			for(int j = 0; j < NByN; j++) {
+				//Build N Columns
+				ButtonNumberFiled[i][j] = new Button(this);
+				ButtonNumberFiled[i][j].setText(String.valueOf(StartNumber));
+				ButtonNumberFiled[i][j].setTag(StartNumber);
+				ButtonNumberFiled[i][j].setOnClickListener(mySelectNumbers);
+				RowLayout[i].addView(ButtonNumberFiled[i][j]);
+				SetNumberArray[StartNumber] = String.valueOf(StartNumber);
+				StartNumber++;
 			}			
-			myLayout.addView(myTableRow[i]);
-			
+			MainLayout.addView(RowLayout[i]);			
 		}
-		
-		Button b = new Button(this);
-		b.setText("dm.widthPixels = "+String.valueOf(dm.widthPixels)+"     dm.heightPixels = "+String.valueOf(dm.heightPixels));
-		myLayout.addView(b);
-		
-		this.setContentView(myLayout);
+		SetNumberArray[StartNumber+1] = "0";
+		//Build Set Default Number Button
+		Button ButtonReset = new Button(this);
+		ButtonReset.setText("Load Test Numbers");
+		ButtonReset.setOnClickListener(myLoadTestNumbers);
+		MainLayout.addView(ButtonReset);
+
+		this.setContentView(MainLayout);
 
 	}//end of CreateDynamicLayouts
+
+	Button.OnClickListener myLoadTestNumbers = new Button.OnClickListener(){		
+		public void onClick(View arg0){
+			ButtonNumberReadWrite( false );//Write date to Buttons
+		}//end of onClick(View arg0)
+
+	};//end of OnClickListener mySelectNumbers
+
+	//a POP Menu to Select Numbers 
+	Button.OnClickListener mySelectNumbers = new Button.OnClickListener(){
+		//POP a Menu
+		public void onClick(View ButtonTag){
+			Button TempButton;
+			DebugPrintOut.setText("ButtonTag.getTag()="+ButtonTag.getTag());
+			TempButton = (Button) ButtonTag.findViewWithTag(ButtonTag.getTag());
+			TempButton.setText("XXXX");
+//			new AlertDialog.Builder(MainActivity.this)
+//			.setTitle("Please Select Numbers")
+//			.setItems(SetNumberArray, new DialogInterface.OnClickListener() {
+//
+//				//When click on a option
+//				public void onClick(DialogInterface dialog, int whichNumber) {
+//					//ButtonNumberFiled..setText(String.valueOf(SetNumberArray[whichNumber]));
+//					ButtonTag.findViewWithTag(i);
+//					//DebugPrintOut.setText(String.valueOf(SetNumberArray[whichNumber]));
+//				}
+//			})
+//			.show();//DialogInterface.OnClickListener
+		}
+	};//end of OnClick  Listener mySelectNumbers
+
+	//Load or Save Buttons   RW=1 Read   ; RW=0 Write
+	void ButtonNumberReadWrite(boolean RW){
+		if(RW){//Read date to Buttons
+//			for(int i = 0; i < NByN; i++)			
+//				for(int j = 0; j < NByN; j++)
+//					NumberArray[i][j] = String.valueOf(ButtonNumberFiled[i][j]).getText());
+		}else{//Write date to Buttons
+			for(int i = 0; i < NByN; i++)			
+				for(int j = 0; j < NByN; j++)
+					ButtonNumberFiled[i][j].setText(String.valueOf(NumberArray[i][j]));
+		}
+		
+	}//end of ButtonNumberReadWrite
+
+
+
+
 
 }//end of MainActivity
 
